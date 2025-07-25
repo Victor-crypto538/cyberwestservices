@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Income & Accounts Receivable Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --bg-dark: #1C2431; /* Deep charcoal blue-gray */
+            --primary-bg: #273142; /* Slightly lighter module background */
+            --secondary-bg: #323E52; /* Even lighter for input/table elements */
+            --border-color: #4C5A73; /* Subtle, professional border */
+            --text-main: #E0E6F0; /* Off-white for main text */
+            --text-secondary: #A0B0C0; /* Lighter gray for labels, hints */
+            --accent-blue: #4A90E2; /* Professional, trustworthy blue */
+            --accent-green: #6DD5ED; /* Cyan/aqua for 'paid' success */
+            --accent-red: #F56B6B; /* Soft red for alerts */
+            --accent-receivable: #FFA07A; /* Light Salmon for Accounts Receivable */
+            --glow-effect: 0 0 15px rgba(74, 144, 226, 0.4); /* Blue glow */
+            --shadow-subtle: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+            --method-cash: #D4AF37; /* Gold for Cash */
+            --method-mpesa: #32CD32; /* Lime Green for M-Pesa */
+        }
+
+        /* Basic body styling */
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Main container styling */
+        .container {
+            background-color: var(--primary-bg);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-subtle), var(--glow-effect);
+            width: 100%;
+            max-width: 900px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Background grid pattern for aesthetics */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(to right, rgba(74, 144, 226, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(74, 144, 226, 0.05) 1px, transparent 1px);
+            background-size: 25px 25px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* Headings styling */
+        h1, h2, h3 { /* Added h3 for sub-headings */
+            color: var(--accent-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+            letter-spacing: 1.5px;
+            font-weight: 500;
+        }
+
+        /* Section containers (input, summary, tables) */
+        .input-section, .summary-section, .daily-entries-section, .historical-summaries-section, .accounts-receivable-section { /* Renamed for clarity */
+            background-color: var(--secondary-bg);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: calc(100% - 28px); /* Adjust for padding and border */
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1em;
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            appearance: none; /* Remove default select styling */
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23A0B0C0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Custom dropdown arrow */
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 24px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: inset 0 0 10px rgba(74, 144, 226, 0.3), 0 0 8px rgba(74, 144, 226, 0.5);
+        }
+
+        button {
+            background-color: var(--accent-blue);
+            color: #FFFFFF;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        button:hover {
+            background-color: #3A7BCD;
+            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.6), 0 0 20px rgba(74, 144, 226, 0.3);
+            transform: translateY(-3px);
+        }
+
+        #clearTodaysEntriesBtn, #clearAllHistoryBtn, #clearAccountsReceivableBtn { /* Renamed for consistency */
+            background-color: var(--accent-red);
+            box-shadow: 0 4px 10px rgba(245, 107, 107, 0.4);
+            margin-top: 25px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #clearTodaysEntriesBtn:hover, #clearAllHistoryBtn:hover, #clearAccountsReceivableBtn:hover {
+            background-color: #CC4C4C;
+            box-shadow: 0 6px 15px rgba(245, 107, 107, 0.6), 0 0 20px rgba(245, 107, 107, 0.3);
+        }
+
+        hr {
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--border-color), transparent);
+            margin: 40px 0;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.2);
+        }
+
+        /* Summary sections (Income and Accounts Receivable) */
+        .summary-section p {
+            font-size: 1.05em;
+            font-weight: 500;
+            text-align: center;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .summary-section p span {
+            font-size: 1.3em;
+            color: var(--accent-green);
+            text-shadow: 0 0 8px rgba(109, 213, 237, 0.6);
+            font-weight: 700;
+        }
+        .summary-section .method-total {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .summary-section .method-total.cash {
+            color: var(--method-cash);
+        }
+        .summary-section .method-total.mpesa {
+            color: var(--method-mpesa);
+        }
+        .summary-section #totalAccountsReceivable { /* Specific style for A/R total */
+            color: var(--accent-receivable);
+            text-shadow: 0 0 8px rgba(255, 160, 122, 0.6);
+        }
+
+        /* Table styling (daily entries, historical summaries, accounts receivable) */
+        #dailyEntriesTable, #historicalSummariesTable, #accountsReceivableTable { /* Renamed for consistency */
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        #dailyEntriesTable th, #dailyEntriesTable td,
+        #historicalSummariesTable th, #historicalSummariesTable td,
+        #accountsReceivableTable th, #accountsReceivableTable td { /* Renamed for consistency */
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: left;
+            color: var(--text-main);
+            font-size: 0.95em;
+        }
+
+        #dailyEntriesTable th, #historicalSummariesTable th, #accountsReceivableTable th { /* Renamed for consistency */
+            background-color: var(--primary-bg);
+            color: var(--accent-blue);
+            text-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+            border-bottom: 2px solid var(--accent-blue);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        #dailyEntriesTable tbody tr:nth-child(even),
+        #historicalSummariesTable tbody tr:nth-child(even),
+        #accountsReceivableTable tbody tr:nth-child(even) { /* Renamed for consistency */
+            background-color: #202B3A;
+        }
+
+        #dailyEntriesTable tbody tr:hover,
+        #historicalSummariesTable tbody tr:hover,
+        #accountsReceivableTable tbody tr:hover { /* Renamed for consistency */
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        .delete-btn {
+            background-color: var(--accent-red);
+            padding: 8px 15px;
+            font-size: 0.85em;
+            margin: 0;
+            box-shadow: 0 2px 5px rgba(245, 107, 107, 0.4);
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #CC4C4C;
+            box-shadow: 0 4px 8px rgba(245, 107, 107, 0.6);
+        }
+
+        .payment-method-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        .payment-method-tag.cash {
+            background-color: var(--method-cash);
+            color: #333;
+        }
+        .payment-method-tag.mpesa {
+            background-color: var(--method-mpesa);
+            color: #fff;
+        }
+
+        /* Accounts Receivable specific styling */
+        .accounts-receivable-section h2 {
+            color: var(--accent-receivable);
+            text-shadow: 0 0 10px rgba(255, 160, 122, 0.5);
+        }
+        .add-unpaid-service-btn { /* Renamed for clarity */
+            background-color: var(--accent-receivable);
+            box-shadow: 0 4px 10px rgba(255, 160, 122, 0.4);
+        }
+        .add-unpaid-service-btn:hover {
+            background-color: #E68A6F;
+            box-shadow: 0 6px 15px rgba(255, 160, 122, 0.6), 0 0 20px rgba(255, 160, 122, 0.3);
+        }
+        .mark-as-paid-btn { /* Renamed for clarity */
+            background-color: var(--accent-green);
+            padding: 8px 15px;
+            font-size: 0.85em;
+            margin: 0 5px;
+            box-shadow: 0 2px 5px rgba(109, 213, 237, 0.4);
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .mark-as-paid-btn:hover {
+            background-color: #5BC0BE;
+            box-shadow: 0 4px 8px rgba(109, 213, 237, 0.6);
+        }
+        .paid-off-status { /* Status for A/R entries that are marked paid */
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+        .outstanding-status { /* Status for A/R entries that are still outstanding */
+            color: var(--accent-receivable);
+            font-weight: bold;
+        }
+
+        /* Laptop Logo Styling */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            max-width: 150px; /* Adjust size as needed */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.6); /* Glow effect for logo */
+            transition: transform 0.3s ease;
+        }
+        .logo-container img:hover {
+            transform: scale(1.05);
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            h1, h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+            input[type="text"],
+            input[type="number"],
+            select,
+            button {
+                font-size: 0.9em;
+                padding: 10px;
+            }
+            #dailyEntriesTable th, #dailyEntriesTable td,
+            #historicalSummariesTable th, #historicalSummariesTable td,
+            #accountsReceivableTable th, #accountsReceivableTable td {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+            .summary-section p {
+                font-size: 0.95em;
+            }
+            .summary-section p span {
+                font-size: 1.2em;
+            }
+            .summary-section .method-total {
+                font-size: 1em;
+            }
+            .delete-btn, .mark-as-paid-btn { /* Changed from pay-debt-btn */
+                font-size: 0.75em;
+                padding: 6px 10px;
+            }
+            .logo-container img {
+                max-width: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+            input[type="text"],
+            input[type="number"],
+            select,
+            button {
+                font-size: 0.8em;
+                padding: 8px;
+            }
+            .delete-btn, .mark-as-paid-btn { /* Changed from pay-debt-btn */
+                padding: 5px 8px;
+                font-size: 0.7em;
+            }
+            #dailyEntriesTable thead, #historicalSummariesTable thead, #accountsReceivableTable thead { /* Renamed */
+                display: none;
+            }
+            #dailyEntriesTable, #historicalSummariesTable, #accountsReceivableTable { /* Renamed */
+                border: none;
+            }
+            #dailyEntriesTable tr, #historicalSummariesTable tr, #accountsReceivableTable tr { /* Renamed */
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 10px;
+            }
+            #dailyEntriesTable td, #historicalSummariesTable td, #accountsReceivableTable td { /* Renamed */
+                display: block;
+                text-align: right;
+                border: none;
+                padding: 5px 0;
+            }
+            #dailyEntriesTable td::before, #historicalSummariesTable td::before, #accountsReceivableTable td::before { /* Renamed */
+                content: attr(data-label);
+                float: left;
+                font-weight: bold;
+                color: var(--accent-blue);
+            }
+            #dailyEntriesTable td:last-child, #accountsReceivableTable td:last-child { /* Renamed */
+                text-align: center;
+                padding-top: 15px;
+            }
+            .logo-container img {
+                max-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <img src="Neon Cyberwest Cafe Sign.png" alt="Laptop Logo">
+        </div>
+        <h1>Cyber Income & Accounts Receivable Tracker</h1>
+
+        <div class="input-section">
+            <h2>Add New Income Entry</h2>
+            <label for="description">Description:</label>
+            <input type="text" id="description" placeholder="e.g., Printing 5 pages, Browsing 30min" required>
+
+            <label for="amount">Amount (KSh):</label>
+            <input type="number" id="amount" placeholder="e.g., 50, 100" min="0" required>
+
+            <label for="paymentMethod">Payment Method:</label>
+            <select id="paymentMethod">
+                <option value="cash">Cash</option>
+                <option value="mpesa">M-Pesa</option>
+            </select>
+
+            <button id="addEntryBtn">Add Income Entry</button>
+        </div>
+
+        <hr>
+
+        <div class="summary-section">
+            <h2>Today's Income Summary</h2>
+            <p>Total Daily Revenue: <span id="totalDailyRevenue">0.00</span> KSh</p>
+            <p class="method-total cash">Cash Total: <span id="totalCashToday">0.00</span> KSh</p>
+            <p class="method-total mpesa">M-Pesa Total: <span id="totalMpesaToday">0.00</span> KSh</p>
+        </div>
+
+        <hr>
+
+        <div class="daily-entries-section">
+            <h2>Today's Income Entries</h2>
+            <table id="dailyEntriesTable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Description</th>
+                        <th>Amount (KSh)</th>
+                        <th>Method</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <button id="clearTodaysEntriesBtn">Clear Today's Entries</button>
+        </div>
+
+        <hr>
+
+        <div class="historical-summaries-section">
+            <h2>Past Daily Income Summaries</h2>
+            <table id="historicalSummariesTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Total Revenue (KSh)</th>
+                        <th>Cash (KSh)</th>
+                        <th>M-Pesa (KSh)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <button id="clearAllHistoryBtn">Clear All Income History</button>
+        </div>
+
+        <hr>
+
+        <div class="accounts-receivable-section">
+            <h2>Money Owed to You (Accounts Receivable)</h2>
+
+            <div class="input-section">
+                <h3>Record Unpaid Service</h3>
+                <label for="clientName">Person's Name:</label>
+                <input type="text" id="clientName" placeholder="e.g., John Doe" required>
+
+                <label for="unpaidServiceDescription">Service Description:</label>
+                <input type="text" id="unpaidServiceDescription" placeholder="e.g., 1hr browsing, 20pgs printing" required>
+
+                <label for="unpaidServiceAmount">Amount Owed (KSh):</label>
+                <input type="number" id="unpaidServiceAmount" placeholder="e.g., 80, 150" min="0" required>
+
+                <button id="addUnpaidServiceBtn" class="add-unpaid-service-btn">Add Unpaid Service</button>
+            </div>
+
+            <hr>
+
+            <div class="summary-section">
+                <h3>Total Outstanding from Clients</h3>
+                <p>Total Owed: <span id="totalAccountsReceivable">0.00</span> KSh</p>
+            </div>
+
+            <hr>
+
+            <div class="current-receivable-section">
+                <h3>Outstanding Client Payments</h3>
+                <table id="accountsReceivableTable">
+                    <thead>
+                        <tr>
+                            <th>Date Owed</th>
+                            <th>Person's Name</th>
+                            <th>Service Description</th>
+                            <th>Amount Owed (KSh)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                <button id="clearAccountsReceivableBtn">Clear All Paid/Deleted Records</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- INCOME TRACKER ELEMENT SELECTIONS ---
+            const descriptionInput = document.getElementById('description');
+            const amountInput = document.getElementById('amount');
+            const paymentMethodSelect = document.getElementById('paymentMethod');
+            const addEntryBtn = document.getElementById('addEntryBtn');
+
+            const totalDailyRevenueSpan = document.getElementById('totalDailyRevenue');
+            const totalCashTodaySpan = document.getElementById('totalCashToday');
+            const totalMpesaTodaySpan = document.getElementById('totalMpesaToday');
+
+            const dailyEntriesTableBody = document.querySelector('#dailyEntriesTable tbody');
+            const clearTodaysEntriesBtn = document.getElementById('clearTodaysEntriesBtn');
+
+            const historicalSummariesTableBody = document.querySelector('#historicalSummariesTable tbody');
+            const clearAllHistoryBtn = document.getElementById('clearAllHistoryBtn');
+
+            // --- ACCOUNTS RECEIVABLE ELEMENT SELECTIONS ---
+            const clientNameInput = document.getElementById('clientName');
+            const unpaidServiceDescriptionInput = document.getElementById('unpaidServiceDescription');
+            const unpaidServiceAmountInput = document.getElementById('unpaidServiceAmount');
+            const addUnpaidServiceBtn = document.getElementById('addUnpaidServiceBtn');
+            const totalAccountsReceivableSpan = document.getElementById('totalAccountsReceivable');
+            const accountsReceivableTableBody = document.querySelector('#accountsReceivableTable tbody');
+            const clearAccountsReceivableBtn = document.getElementById('clearAccountsReceivableBtn');
+
+            // --- DATA STORAGE (using localStorage) ---
+            let dailyIncomeEntries = JSON.parse(localStorage.getItem('cyberIncomeEntries')) || [];
+            let historicalDailySummaries = JSON.parse(localStorage.getItem('cyberDailySummaries')) || {};
+            let accountsReceivable = JSON.parse(localStorage.getItem('cyberAccountsReceivable')) || [];
+
+            // --- HELPER FUNCTIONS ---
+            const getTodayDateString = () => {
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const yyyy = today.getFullYear();
+                return `${dd}/${mm}/${yyyy}`;
+            };
+
+            const getCurrentTimeString = () => {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                return `${hours}:${minutes}`;
+            };
+
+            // --- INCOME TRACKER RENDER FUNCTIONS ---
+            function renderDailyEntries() {
+                dailyEntriesTableBody.innerHTML = '';
+                const today = getTodayDateString();
+
+                let totalDailyRevenue = 0;
+                let totalCashToday = 0;
+                let totalMpesaToday = 0;
+
+                const todaysEntries = dailyIncomeEntries.filter(entry => entry.date === today);
+
+                if (todaysEntries.length === 0) {
+                    const noEntriesRow = dailyEntriesTableBody.insertRow();
+                    noEntriesRow.innerHTML = '<td colspan="5" style="text-align: center; color: var(--text-secondary);">No income entries for today.</td>';
+                } else {
+                    todaysEntries.forEach((entry) => {
+                        const row = dailyEntriesTableBody.insertRow();
+                        row.innerHTML = `
+                            <td data-label="Time">${entry.time}</td>
+                            <td data-label="Description">${entry.description}</td>
+                            <td data-label="Amount">${entry.amount.toFixed(2)}</td>
+                            <td data-label="Method"><span class="payment-method-tag ${entry.paymentMethod}">${entry.paymentMethod.toUpperCase()}</span></td>
+                            <td data-label="Actions"><button class="delete-btn" data-entry-id="${entry.id}"><i class="fas fa-trash-alt"></i></button></td>
+                        `;
+                        totalDailyRevenue += entry.amount;
+                        if (entry.paymentMethod === 'cash') {
+                            totalCashToday += entry.amount;
+                        } else if (entry.paymentMethod === 'mpesa') {
+                            totalMpesaToday += entry.amount;
+                        }
+                    });
+                }
+                totalDailyRevenueSpan.textContent = totalDailyRevenue.toFixed(2);
+                totalCashTodaySpan.textContent = totalCashToday.toFixed(2);
+                totalMpesaTodaySpan.textContent = totalMpesaToday.toFixed(2);
+            }
+
+            function renderHistoricalSummaries() {
+                historicalSummariesTableBody.innerHTML = '';
+
+                const sortedDates = Object.keys(historicalDailySummaries).sort((a, b) => {
+                    const [dA, mA, yA] = a.split('/').map(Number);
+                    const [dB, mB, yB] = b.split('/').map(Number);
+                    const dateA = new Date(yA, mA - 1, dA);
+                    const dateB = new Date(yB, mB - 1, dB);
+                    return dateB - dateA;
+                });
+
+                if (sortedDates.length === 0) {
+                    const noSummariesRow = historicalSummariesTableBody.insertRow();
+                    noSummariesRow.innerHTML = '<td colspan="4" style="text-align: center; color: var(--text-secondary);">No historical summaries yet.</td>';
+                } else {
+                    sortedDates.forEach(date => {
+                        const summary = historicalDailySummaries[date];
+                        const row = historicalSummariesTableBody.insertRow();
+                        row.innerHTML = `
+                            <td data-label="Date">${date}</td>
+                            <td data-label="Total Revenue">${summary.totalDailyRevenue.toFixed(2)}</td>
+                            <td data-label="Cash">${summary.totalCash.toFixed(2)}</td>
+                            <td data-label="M-Pesa">${summary.totalMpesa.toFixed(2)}</td>
+                        `;
+                    });
+                }
+            }
+
+            // --- ACCOUNTS RECEIVABLE RENDER FUNCTIONS ---
+            function renderAccountsReceivable() {
+                accountsReceivableTableBody.innerHTML = '';
+                let totalOutstanding = 0;
+
+                const outstandingServices = accountsReceivable.filter(service => !service.isPaid);
+
+                if (outstandingServices.length === 0) {
+                    const noServicesRow = accountsReceivableTableBody.insertRow();
+                    noServicesRow.innerHTML = '<td colspan="5" style="text-align: center; color: var(--text-secondary);">No outstanding client payments.</td>';
+                } else {
+                    outstandingServices.forEach((service) => {
+                        const row = accountsReceivableTableBody.insertRow();
+                        const statusClass = service.isPaid ? 'paid-off-status' : 'outstanding-status';
+                        const statusText = service.isPaid ? 'PAID' : 'Outstanding';
+
+                        row.innerHTML = `
+                            <td data-label="Date Owed">${service.dateAdded}</td>
+                            <td data-label="Person's Name">${service.personName || 'N/A'}</td>
+                            <td data-label="Service Description">${service.description}</td>
+                            <td data-label="Amount Owed" class="${statusClass}">${service.amount.toFixed(2)}</td>
+                            <td data-label="Actions">
+                                ${!service.isPaid ? `
+                                    <button class="mark-as-paid-btn" data-service-id="${service.id}"><i class="fas fa-check-circle"></i> Mark Paid</button>
+                                ` : ''}
+                                <button class="delete-btn" data-service-id="${service.id}"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                        if (!service.isPaid) {
+                            totalOutstanding += service.amount;
+                        }
+                    });
+                }
+                totalAccountsReceivableSpan.textContent = totalOutstanding.toFixed(2);
+            }
+
+            // --- CORE LOGIC FUNCTIONS (Income Tracker) ---
+            function addIncomeEntry(description, amount, paymentMethod) {
+                const today = getTodayDateString();
+                const currentTime = getCurrentTimeString();
+
+                const newEntry = {
+                    id: Date.now(),
+                    date: today,
+                    time: currentTime,
+                    description,
+                    amount,
+                    paymentMethod
+                };
+
+                dailyIncomeEntries.push(newEntry);
+                localStorage.setItem('cyberIncomeEntries', JSON.stringify(dailyIncomeEntries));
+                renderDailyEntries();
+            }
+
+            function handleAddIncomeEntryFromForm() {
+                const description = descriptionInput.value.trim();
+                const amount = parseFloat(amountInput.value);
+                const paymentMethod = paymentMethodSelect.value;
+
+                if (!description || isNaN(amount) || amount <= 0) {
+                    alert('Please enter a valid description and amount.');
+                    return;
+                }
+                addIncomeEntry(description, amount, paymentMethod);
+
+                // Clear form fields
+                descriptionInput.value = '';
+                amountInput.value = '';
+                paymentMethodSelect.value = 'cash';
+                descriptionInput.focus();
+            }
+
+
+            function deleteDailyEntry(idToDelete) {
+                if (confirm('Are you sure you want to delete this income entry?')) {
+                    dailyIncomeEntries = dailyIncomeEntries.filter(entry => entry.id !== idToDelete);
+                    localStorage.setItem('cyberIncomeEntries', JSON.stringify(dailyIncomeEntries));
+                    renderDailyEntries();
+                }
+            }
+
+            let lastSavedDate = localStorage.getItem('lastSavedDailySummaryDate');
+
+            function checkAndSaveDailySummary() {
+                const today = getTodayDateString();
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+
+                const targetHour = 17; // 5 PM
+                const targetMinute = 0;
+
+                if (currentHour === targetHour && currentMinute === targetMinute && lastSavedDate !== today) {
+                    console.log(`It's ${targetHour}:${targetMinute}. Saving daily income summary for ${today}...`);
+
+                    const summaryData = {
+                        totalDailyRevenue: parseFloat(totalDailyRevenueSpan.textContent),
+                        totalCash: parseFloat(totalCashTodaySpan.textContent),
+                        totalMpesa: parseFloat(totalMpesaTodaySpan.textContent)
+                    };
+
+                    historicalDailySummaries[today] = summaryData;
+                    localStorage.setItem('cyberDailySummaries', JSON.stringify(historicalDailySummaries));
+
+                    localStorage.setItem('lastSavedDailySummaryDate', today);
+                    lastSavedDate = today;
+
+                    console.log(`Daily income summary for ${today} saved:`, summaryData);
+                    alert(`Daily Income Summary for ${today} (KSh ${summaryData.totalDailyRevenue.toFixed(2)}) saved automatically at 5:00 PM!`);
+
+                    renderHistoricalSummaries();
+                }
+            }
+
+            setInterval(checkAndSaveDailySummary, 60000); // Check every minute
+
+            // --- CORE LOGIC FUNCTIONS (Accounts Receivable) ---
+            function addUnpaidService() {
+                const personName = clientNameInput.value.trim();
+                const serviceDescription = unpaidServiceDescriptionInput.value.trim();
+                const serviceAmount = parseFloat(unpaidServiceAmountInput.value);
+
+                if (!personName || !serviceDescription || isNaN(serviceAmount) || serviceAmount <= 0) {
+                    alert('Please enter the person\'s name, a valid service description, and amount.');
+                    return;
+                }
+
+                const newService = {
+                    id: Date.now(),
+                    dateAdded: getTodayDateString(),
+                    personName: personName,
+                    description: serviceDescription,
+                    amount: serviceAmount,
+                    isPaid: false
+                };
+
+                accountsReceivable.push(newService);
+                localStorage.setItem('cyberAccountsReceivable', JSON.stringify(accountsReceivable));
+
+                clientNameInput.value = '';
+                unpaidServiceDescriptionInput.value = '';
+                unpaidServiceAmountInput.value = '';
+                clientNameInput.focus();
+
+                renderAccountsReceivable();
+            }
+
+            function markServiceAsPaid(serviceId) {
+                const serviceIndex = accountsReceivable.findIndex(s => s.id === serviceId);
+                if (serviceIndex === -1) return;
+
+                const service = accountsReceivable[serviceIndex];
+                if (service.isPaid) {
+                    alert('This service is already marked as paid.');
+                    return;
+                }
+
+                // Prompt for payment method for income tracking
+                const paymentMethod = prompt(`How was the KSh ${service.amount.toFixed(2)} for "${service.description}" from ${service.personName || 'an unknown person'} paid? Enter "cash" or "mpesa".`);
+
+                if (paymentMethod && (paymentMethod.toLowerCase() === 'cash' || paymentMethod.toLowerCase() === 'mpesa')) {
+                    service.isPaid = true;
+                    localStorage.setItem('cyberAccountsReceivable', JSON.stringify(accountsReceivable));
+
+                    // Add this amount to daily income entries
+                    addIncomeEntry(`Payment from ${service.personName || 'client'} for ${service.description} (A/R)`, service.amount, paymentMethod.toLowerCase());
+
+                    alert(`Service "${service.description}" from ${service.personName || 'client'} marked as paid. KSh ${service.amount.toFixed(2)} added to daily income as ${paymentMethod.toLowerCase()}.`);
+                    renderAccountsReceivable();
+                } else {
+                    alert('Invalid payment method. Please enter "cash" or "mpesa".');
+                }
+            }
+
+            function deleteAccountsReceivableEntry(serviceId) {
+                if (confirm('Are you sure you want to delete this outstanding service record? This cannot be undone.')) {
+                    accountsReceivable = accountsReceivable.filter(s => s.id !== serviceId);
+                    localStorage.setItem('cyberAccountsReceivable', JSON.stringify(accountsReceivable));
+                    renderAccountsReceivable();
+                    alert('Outstanding service record deleted!');
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            addEntryBtn.addEventListener('click', handleAddIncomeEntryFromForm);
+
+            dailyEntriesTableBody.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-btn') || event.target.closest('.delete-btn')) {
+                    const button = event.target.classList.contains('delete-btn') ? event.target : event.target.closest('.delete-btn');
+                    const entryId = parseInt(button.dataset.entryId);
+                    deleteDailyEntry(entryId);
+                }
+            });
+
+            clearTodaysEntriesBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear ALL of today\'s income entries? This cannot be undone.')) {
+                    const today = getTodayDateString();
+                    dailyIncomeEntries = dailyIncomeEntries.filter(entry => entry.date !== today);
+                    localStorage.setItem('cyberIncomeEntries', JSON.stringify(dailyIncomeEntries));
+                    renderDailyEntries();
+                    alert('Today\'s income entries cleared!');
+                }
+            });
+
+            clearAllHistoryBtn.addEventListener('click', () => {
+                if (confirm('DANGER ZONE: Are you absolutely sure you want to CLEAR ALL INCOME HISTORY? This cannot be undone.')) {
+                    historicalDailySummaries = {};
+                    localStorage.removeItem('cyberDailySummaries');
+                    localStorage.removeItem('lastSavedDailySummaryDate');
+                    renderHistoricalSummaries();
+                    alert('All income history purged!');
+                }
+            });
+
+            // Accounts Receivable Event Listeners
+            addUnpaidServiceBtn.addEventListener('click', addUnpaidService);
+
+            accountsReceivableTableBody.addEventListener('click', (event) => {
+                const targetBtn = event.target.closest('.mark-as-paid-btn');
+                if (targetBtn) {
+                    const serviceId = parseInt(targetBtn.dataset.serviceId);
+                    markServiceAsPaid(serviceId);
+                    return;
+                }
+
+                const deleteBtn = event.target.closest('.delete-btn');
+                if (deleteBtn) {
+                    const serviceId = parseInt(deleteBtn.dataset.serviceId);
+                    deleteAccountsReceivableEntry(serviceId);
+                }
+            });
+
+            clearAccountsReceivableBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear ALL paid and deleted accounts receivable records? This will only remove records already marked as paid or those manually deleted. Outstanding items will remain unless marked paid or deleted individually.')) {
+                    accountsReceivable = accountsReceivable.filter(service => !service.isPaid);
+                    localStorage.setItem('cyberAccountsReceivable', JSON.stringify(accountsReceivable));
+                    renderAccountsReceivable();
+                    alert('Paid and deleted accounts receivable records purged!');
+                }
+            });
+
+            // --- INITIAL RENDERS ON PAGE LOAD ---
+            renderDailyEntries();
+            renderHistoricalSummaries();
+            renderAccountsReceivable();
+
+            // Check if it's a new day and reset the lastSavedDate if necessary
+            if (lastSavedDate !== getTodayDateString()) {
+                localStorage.removeItem('lastSavedDailySummaryDate');
+                lastSavedDate = null;
+                console.log("New day detected. Resetting daily save flag.");
+            }
+        });
+    </script>
+</body>
+</html>
